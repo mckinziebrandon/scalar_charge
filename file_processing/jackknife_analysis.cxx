@@ -14,6 +14,8 @@ Description:    jk analysis...
 
 void jackknife_analysis()
 {
+    const Int_t nFiles = 164;
+
     using std::cout;
     using std::endl;
 
@@ -37,15 +39,14 @@ void jackknife_analysis()
 
     TH1F * jth_C2_hist_real[nFiles];    // jth jacknife histogram
     TH1F * jth_C2_hist_imag[nFiles];    // jth jacknife histogram
-
     TH1F * jth_C3_hist_real[nFiles];    // jth jacknife histogram
     TH1F * jth_C3_hist_imag[nFiles];    // jth jacknife histogram
 
+    // name histograms
     for (int j = 0; j < nFiles; j++)
     {
         jth_C2_hist_real[j] = new TH1F(Form("C2_real_hist_j_%d", j) , "hist", 64, -0.5, 63.5); 
         jth_C2_hist_imag[j] = new TH1F(Form("C2_imag_hist_j_%d", j) , "hist", 64, -0.5, 63.5); 
-
         jth_C3_hist_real[j] = new TH1F(Form("C3_real_hist_j_%d", j) , "hist", 64, -0.5, 63.5); 
         jth_C3_hist_imag[j] = new TH1F(Form("C3_imag_hist_j_%d", j) , "hist", 64, -0.5, 63.5); 
     }
@@ -63,21 +64,22 @@ void jackknife_analysis()
     Int_t timeslice, count(0);
     Int_t nEntries = (Int_t)C3_tree->GetEntries();
 
+    // organize data into array
     for (int i = 0; i < nEntries; i++)
     {
-        int time = i%nTimes;
+        timeslice = i%nTimes;
         C2_tree->GetEntry(i);
         C3_tree->GetEntry(i);
 
-        if (i%nTimes == 0 && i !=0)
+        if (timeslice == 0 && i !=0)
         {
             count++;
         }
 
-        C2_RFunc_time_file[time][count] = C2_data.R1;
-        C2_IFunc_time_file[time][count] = C2_data.I1;
-        C3_RFunc_time_file[time][count] = C3_data.R1;
-        C3_IFunc_time_file[time][count] = C3_data.I1;
+        C2_RFunc_time_file[timeslice][count] = C2_data.R1;
+        C2_IFunc_time_file[timeslice][count] = C2_data.I1;
+        C3_RFunc_time_file[timeslice][count] = C3_data.R1;
+        C3_IFunc_time_file[timeslice][count] = C3_data.I1;
     }
 
     for (int time = 0; time < nTimes; time++)
@@ -113,7 +115,5 @@ void jackknife_analysis()
     }
 
     outFile->Write();
-
-
 
 }
