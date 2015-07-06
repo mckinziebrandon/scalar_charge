@@ -30,7 +30,8 @@ void analysis()
     TH1F * jth_C3_d_hist_real[nFiles];    
     TH1F * jth_C3_d_hist_imag[nFiles];    
 
-    TH1F * jth_ratio_hist[nFiles];
+    TH1F * jth_ratio_hist_real[nFiles];
+    TH1F * jth_ratio_hist_imag[nFiles];
 
     TH1F * C2_hist = new TH1F("C2_hist", "C2_hist", 64, -0.5, 63.5);
     TH1F * C3_hist = new TH1F("C3_hist", "C3_hist", 64, -0.5, 63.5);
@@ -43,83 +44,53 @@ void analysis()
         jth_C3_u_hist_imag[j] = (TH1F*)f->Get(Form("C3_u_imag_hist_j_%d;1", j));
         jth_C3_d_hist_real[j] = (TH1F*)f->Get(Form("C3_d_real_hist_j_%d;1", j));
         jth_C3_d_hist_imag[j] = (TH1F*)f->Get(Form("C3_d_imag_hist_j_%d;1", j));
+
+        jth_ratio_hist_real[j] = new TH1F(Form("%d_ratio_hist_real", j) , "hist", 64, -0.5, 63.5);
+        jth_ratio_hist_imag[j] = new TH1F(Form("%d_ratio_hist_imag", j) , "hist", 64, -0.5, 63.5);
     }
 
-    Float_t bin_content_real(0);
-    Float_t bin_content_imag(0);
-    Float_t bin_magnitude(0);
-    Float_t r_norm_factor(0);
-    Float_t i_norm_factor(0);
 
-    // C2
+    Float_t C3_u_real, C3_u_imag;
+    Float_t C3_d_real, C3_d_imag;
+    Float_t C2_real, C2_imag;
+
+    Float_t numer_real, numer_imag;
+    Float_t denom_real, denom_imag;
+
+    Float_t ratio_real, ratio_imag;
+
+    // generates set of jackknife scalar charges (ratios) hists
     for (int t = 0; t < nTimes; t++)
     {
-        bin_content_real = 0;
-        bin_content_imag = 0;
-        bin_magnitude = 0;
-
         for (int j = 0; j < nFiles; j++)
         {
-            bin_content_real += jth_C2_hist_real[j]->GetBinContent(t+1);
-            bin_content_imag += jth_C2_hist_imag[j]->GetBinContent(t+1);
-        }
-    
-        bin_content_real = bin_content_real / Float_t(nFiles);
-        bin_content_imag = bin_content_imag / Float_t(nFiles);
-        bin_magnitude = TMath::Sqrt(bin_content_real*bin_content_real + bin_content_imag*bin_content_imag);
+            C2_real = jth_C2_hist_real[j]->GetBinContent(t+1);      // c
+            C2_imag = jth_C2_hist_imag[j]->GetBinContent(t+1);      // d
 
-        if (t == 9)
-        {
-            r_norm_factor = bin_content_real;
-            i_norm_factor = bin_content_imag;
-        }
+            C3_u_real = jth_C3_u_hist_real[j]->GetBinContent(t+1);  // a1
+            C3_u_imag = jth_C3_u_hist_imag[j]->GetBinContent(t+1);  // b1
+            C3_d_real = jth_C3_d_hist_real[j]->GetBinContent(t+1);  // a2
+            C3_d_imag = jth_C3_d_hist_imag[j]->GetBinContent(t+1);  // b2
 
-        C2_hist->SetBinContent(t+1, bin_magnitude);
+            numer_real = C3_u_real - C3_d_real;
+            numer_imag = C3_u_imag - C3_d_imag;
+            denom_real = C2_real;
+            denom_imag = C2_imag;
+
+            ratio_real = (numer_real * denom_real) + (numer_imag * denom_imag);
+            ratio_real = 1 / (denom_real*denom_real + denom_imag*denom_imag);
+
+            ratio_imag = (numer_imag * denom_real) - (numer_real * denom_imag);
+            ratio_imag = 1 / (denom_real*denom_real + denom_imag*denom_imag);
+
+            jth_ratio_hist_real[j]->SetBinContent(t+1, ratio_real);
+            jth_ratio_hist_imag[j]->SetBinContent(t+1, ratio_imag);
+            
+            if (t == nTimes-1)
+            {
+                jth_ratio_hist_real[j]->Write();
+                jth_ratio_hist_imag[j]->Write();
+            }
+        }
     }
-
-    // C3
-    for (int t = 0; t < nTimes; t++)
-    {
-        bin_content_real = 0;
-        bin_content_imag = 0;
-        bin_magnitude = 0;
-
-        for (int j = 0; j < nFiles; j++)
-        {
-            bin_content_real += jth_C3_u_hist_real[j]->GetBinContent(t+1);
-            bin_content_real -= jth_C3_d_hist_real[j]->GetBinContent(t+1);
-
-            bin_content_imag += jth_C3_u_hist_imag[j]->GetBinContent(t+1);
-            bin_content_imag -= jth_C3_d_hist_imag[j]->GetBinContent(t+1);
-        }
-    
-        bin_content_real = bin_content_real / Float_t(nFiles);
-        bin_content_imag = bin_content_imag / Float_t(nFiles);
-
-        // complex division
-        bin_magnitude = TMath::Sqrt(TMath::Power((bin_content_real * r_norm_factor) + (bin_content_imag * i_norm_factor), 2) 
-                                  + TMath::Power((bin_content_imag * r_norm_factor) - (bin_content_real * i_norm_factor), 2));
-        bin_magnitude *= 1 / ((TMath::Power(r_norm_factor, 2)) + (TMath::Power(i_norm_factor, 2)));
-
-        C3_hist->SetBinContent(t+1, bin_magnitude);
-    }
-
-    // get ratio histogram
-    TH1F * gscalar_hist = (TH1F*)C3_hist->Clone("gscalar_hist");
-    gscalar_hist->SetTitle("Isovector Scalar Charge g_{s}; timeslice; g_{s}(t)");
-    gscalar_hist->GetXaxis()->CenterTitle();
-    gscalar_hist->GetYaxis()->CenterTitle();
-//  gscalar_hist->Scale(1/C2_hist->GetBinContent(10));
-
-    TCanvas * MyC = new TCanvas();
-    MyC->cd();
-
-    TLegend * legend = new TLegend(0.60, 0.70, 0.88, 0.88);
-    legend->AddEntry(gscalar_hist, "<N(#vec{P})|#bar{u}u-#bar{d}d|N(#vec{P})>  ", "P");
-
-    gscalar_hist->Draw("CP");
-    legend->Draw();
-
-
-    outFile->Write();
 }
