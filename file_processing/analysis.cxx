@@ -25,8 +25,10 @@ void analysis()
 
     TH1F * jth_C2_hist_real[nFiles];    
     TH1F * jth_C2_hist_imag[nFiles];    
-    TH1F * jth_C3_hist_real[nFiles];    
-    TH1F * jth_C3_hist_imag[nFiles];    
+    TH1F * jth_C3_u_hist_real[nFiles];    
+    TH1F * jth_C3_u_hist_imag[nFiles];    
+    TH1F * jth_C3_d_hist_real[nFiles];    
+    TH1F * jth_C3_d_hist_imag[nFiles];    
 
     TH1F * C2_hist = new TH1F("C2_hist", "C2_hist", 64, -0.5, 63.5);
     TH1F * C3_hist = new TH1F("C3_hist", "C3_hist", 64, -0.5, 63.5);
@@ -35,8 +37,10 @@ void analysis()
     {
         jth_C2_hist_real[j] = (TH1F*)f->Get(Form("C2_real_hist_j_%d;1", j));
         jth_C2_hist_imag[j] = (TH1F*)f->Get(Form("C2_imag_hist_j_%d;1", j));
-        jth_C3_hist_real[j] = (TH1F*)f->Get(Form("C3_real_hist_j_%d;1", j));
-        jth_C3_hist_imag[j] = (TH1F*)f->Get(Form("C3_imag_hist_j_%d;1", j));
+        jth_C3_u_hist_real[j] = (TH1F*)f->Get(Form("C3_u_real_hist_j_%d;1", j));
+        jth_C3_u_hist_imag[j] = (TH1F*)f->Get(Form("C3_u_imag_hist_j_%d;1", j));
+        jth_C3_d_hist_real[j] = (TH1F*)f->Get(Form("C3_d_real_hist_j_%d;1", j));
+        jth_C3_d_hist_imag[j] = (TH1F*)f->Get(Form("C3_d_imag_hist_j_%d;1", j));
     }
 
     // get <c2(t)>
@@ -47,7 +51,6 @@ void analysis()
     for (int t = 0; t < nTimes; t++)
     {
         // -------------------------- begin C2 --------------------------------------
-
         bin_content_real = 0;
         bin_content_imag = 0;
         bin_magnitude = 0;
@@ -63,19 +66,18 @@ void analysis()
         bin_magnitude = TMath::Sqrt(bin_content_real*bin_content_real + bin_content_imag*bin_content_imag);
 
         C2_hist->SetBinContent(t+1, bin_magnitude);
-
         // -------------------------- end C2 --------------------------------------
 
-        // -------------------------- begin C3 --------------------------------------
 
+        // -------------------------- begin C3 --------------------------------------
         bin_content_real = 0;
         bin_content_imag = 0;
         bin_magnitude = 0;
 
         for (int j = 0; j < nFiles; j++)
         {
-            bin_content_real += jth_C3_hist_real[j]->GetBinContent(t+1);
-            bin_content_imag += jth_C3_hist_imag[j]->GetBinContent(t+1);
+            bin_content_real += jth_C3_u_hist_real[j]->GetBinContent(t+1);
+            bin_content_imag += jth_C3_u_hist_imag[j]->GetBinContent(t+1);
         }
     
         bin_content_real = bin_content_real / Float_t(nFiles);
@@ -83,8 +85,8 @@ void analysis()
         bin_magnitude = TMath::Sqrt(bin_content_real*bin_content_real + bin_content_imag*bin_content_imag);
 
         C3_hist->SetBinContent(t+1, bin_magnitude);
-
         // -------------------------- end C3 --------------------------------------
+
     }
 
     // get ratio histogram
