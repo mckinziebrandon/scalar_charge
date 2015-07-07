@@ -38,17 +38,17 @@ void get_jackknife_ratios()
 
     for (int j = 0; j < nFiles; j++)
     {
-        jth_C2_hist_real[j] = (TH1F*)f->Get(Form("C2_real_hist_j_%d;1", j));
-        jth_C2_hist_imag[j] = (TH1F*)f->Get(Form("C2_imag_hist_j_%d;1", j));
-        jth_C3_u_hist_real[j] = (TH1F*)f->Get(Form("C3_u_real_hist_j_%d;1", j));
-        jth_C3_u_hist_imag[j] = (TH1F*)f->Get(Form("C3_u_imag_hist_j_%d;1", j));
-        jth_C3_d_hist_real[j] = (TH1F*)f->Get(Form("C3_d_real_hist_j_%d;1", j));
-        jth_C3_d_hist_imag[j] = (TH1F*)f->Get(Form("C3_d_imag_hist_j_%d;1", j));
+        jth_C2_hist_real[j]     = (TH1F*)f->Get(Form("C2_real_hist_j_%d;1", j));
+        jth_C2_hist_imag[j]     = (TH1F*)f->Get(Form("C2_imag_hist_j_%d;1", j));
 
-        jth_ratio_hist_real[j] = new TH1F(Form("%d_ratio_hist_real", j) , "hist", 64, -0.5, 63.5);
-        jth_ratio_hist_imag[j] = new TH1F(Form("%d_ratio_hist_imag", j) , "hist", 64, -0.5, 63.5);
+        jth_C3_u_hist_real[j]   = (TH1F*)f->Get(Form("C3_u_real_hist_j_%d;1", j));
+        jth_C3_u_hist_imag[j]   = (TH1F*)f->Get(Form("C3_u_imag_hist_j_%d;1", j));
+        jth_C3_d_hist_real[j]   = (TH1F*)f->Get(Form("C3_d_real_hist_j_%d;1", j));
+        jth_C3_d_hist_imag[j]   = (TH1F*)f->Get(Form("C3_d_imag_hist_j_%d;1", j));
+
+        jth_ratio_hist_real[j]  = new TH1F(Form("%d_ratio_hist_real", j) , "hist", 64, -0.5, 63.5);
+        jth_ratio_hist_imag[j]  = new TH1F(Form("%d_ratio_hist_imag", j) , "hist", 64, -0.5, 63.5);
     }
-
 
     Float_t C3_u_real, C3_u_imag;
     Float_t C3_d_real, C3_d_imag;
@@ -64,8 +64,11 @@ void get_jackknife_ratios()
     {
         for (int j = 0; j < nFiles; j++)
         {
-            C2_real = jth_C2_hist_real[j]->GetBinContent(t+1);      // c
-            C2_imag = jth_C2_hist_imag[j]->GetBinContent(t+1);      // d
+            numer_real = 0; numer_imag = 0;
+            denom_real = 0; denom_imag = 0;
+
+            C2_real = jth_C2_hist_real[j]->GetBinContent(10);      // c
+            C2_imag = jth_C2_hist_imag[j]->GetBinContent(10);      // d
 
             C3_u_real = jth_C3_u_hist_real[j]->GetBinContent(t+1);  // a1
             C3_u_imag = jth_C3_u_hist_imag[j]->GetBinContent(t+1);  // b1
@@ -75,13 +78,15 @@ void get_jackknife_ratios()
             numer_real = C3_u_real - C3_d_real;
             numer_imag = C3_u_imag - C3_d_imag;
             denom_real = C2_real;
-            denom_imag = C2_imag;
+            //denom_imag = C2_imag;
+            denom_imag = 0;
 
+            // complex division formula
             ratio_real = (numer_real * denom_real) + (numer_imag * denom_imag);
-            ratio_real = 1 / (denom_real*denom_real + denom_imag*denom_imag);
+            ratio_real *= 1 / (denom_real*denom_real + denom_imag*denom_imag);
 
             ratio_imag = (numer_imag * denom_real) - (numer_real * denom_imag);
-            ratio_imag = 1 / (denom_real*denom_real + denom_imag*denom_imag);
+            ratio_imag *= 1 / (denom_real*denom_real + denom_imag*denom_imag);
 
             jth_ratio_hist_real[j]->SetBinContent(t+1, ratio_real);
             jth_ratio_hist_imag[j]->SetBinContent(t+1, ratio_imag);

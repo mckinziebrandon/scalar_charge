@@ -65,8 +65,8 @@ Int_t plot_scalar_charge()
             imag_err += TMath::Power(jth_ratio_hist_imag[j]->GetBinContent(t+1) - imag_avg, 2);
         }
 
-        real_err = TMath::Sqrt(((nFiles-1)/nFiles) * real_err);
-        imag_err = TMath::Sqrt(((nFiles-1)/nFiles) * imag_err);
+        real_err = TMath::Sqrt((Float_t)((nFiles-1)/nFiles) * real_err);
+        imag_err = TMath::Sqrt((Float_t)((nFiles-1)/nFiles) * imag_err);
 
         g_scalar->SetBinError(t+1, real_err);
         g_scalar_imag->SetBinError(t+1, imag_err);
@@ -83,16 +83,17 @@ Int_t plot_scalar_charge()
 
     TLegend * legend = new TLegend(0.15, 0.85, 0.40, 0.92);
     TLegend * legend2 = new TLegend(0.15, 0.85, 0.40, 0.92);
-        legend->AddEntry(g_scalar,"Re(g_{s})","PE");
-        legend2->AddEntry(g_scalar_imag,"Im(g_{s})","PE");
+    legend->AddEntry(g_scalar,"Re(g_{s})","PE");
+    legend2->AddEntry(g_scalar_imag,"Im(g_{s})","PE");
 
     MyC->cd();
     pad1->cd(1);
-        g_scalar->Draw("EP");
-        legend->Draw();
+    g_scalar->Draw("PE2");
+    legend->Draw();
+
     pad1->cd(2);
-        g_scalar_imag->Draw("EP");
-        legend2->Draw();
+    g_scalar_imag->Draw("PPE2");
+    legend2->Draw();
     MyC->Update();
 
     gROOT->ForceStyle();

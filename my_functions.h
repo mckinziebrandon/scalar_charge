@@ -4,27 +4,40 @@
 #include <limits>
 #include <cstdlib>
 #include "TBranch.h"
-#include "TNtuple.h"
-#include "TTree.h"
+#include "TCanvas.h"
+#include "TDirectory.h"
+#include "TF1.h"
 #include "TFile.h"
+#include "TGraph.h"
+#include "TGraphErrors.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TH2F.h"
-#include "TROOT.h"
-#include "TGraph.h"
-#include "TGraphErrors.h"
-#include "TDirectory.h"
-#include "TCanvas.h"
-#include "TF1.h"
-#include "TMath.h"
-#include "TLegend.h"
 #include "TLatex.h"
+#include "TLegend.h"
+#include "TMath.h"
+#include "TNtuple.h"
+#include "TPad.h"
+#include "TTree.h"
+#include "TROOT.h"
+#include "TStyle.h"
+
 
 #ifndef MY_FUNCTIONS_H
 #define MY_FUNCTIONS_H
 
+class Data
+{
+public:
+    Int_t t;
+    Float_t R1;
+    Float_t I1;
+    Float_t R2;
+    Float_t I2;
+};
+
 // -------- frequently used constants --------
-const Int_t nFiles              = 164;
+const Int_t nFiles              = 165;
 const Int_t nTimes              = 64;
 const Int_t lineNumber_C3       = 10057;
 const Int_t lineNumber_C2       = 5007;
@@ -37,6 +50,7 @@ std::fstream& GotoLine(std::fstream&, int);
 Double_t StandardError(const Int_t, double, double[]);
 Double_t StandardMean(const Int_t, const TH1F*);
 Double_t Cosh(Double_t*, Double_t*);
+Float_t AverageOverFiles(TH1F** histArray, Int_t inputBin, const Int_t n);
 // ---------------------------------------------------
 
 std::fstream& GotoLine(std::fstream& file, int num)
@@ -78,6 +92,29 @@ Double_t Cosh(Double_t *x, Double_t *par)
     return f;
 }
 
+Float_t AverageOverFiles(TH1F** histArray, Int_t inputBin, const Int_t n)
+{
+    Float_t result(0);
+    for (Int_t i = 0; i < n; i++)
+    {
+        result += histArray[i]->GetBinContent(inputBin);
+    }
+
+    return result / (Float_t)n;
+}
+
+Float_t ErrorOverFiles(TH1F** histArray, Int_t inputBin, const Int_t n, const Float_t avg)
+{
+    Float_t result(0), bin_content(0);
+
+    for (Int_t i = 0; i < n; i++)
+    {
+        bin_content  = histArray[i]->GetBinContent(inputBin);
+        result      += TMath::Power(bin_content - avg, 2);
+    }
+
+    return TMath::Sqrt(result * Float_t(n-1)/n);
+}
 
 
 #endif
