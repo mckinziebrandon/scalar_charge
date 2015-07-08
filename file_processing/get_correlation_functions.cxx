@@ -11,16 +11,12 @@ Description:    outputs ntuples containing correlation function column data
 #include <cstdlib>
 
 #include "../my_functions.h"
+#include "../my_data.h"
 
 void get_correlation_functions()
 {
     using std::cout;
     using std::endl;
-    
-    // variables
-    TString baseName, branchName, dirName, fileName; 
-    TString tupleName[2];
-    Int_t fileNumber;
 
     // file associations
     fstream inFile;
@@ -29,96 +25,65 @@ void get_correlation_functions()
 
     // objects for storing raw data
     Data data;
+    TString tupleName[2];
     TNtuple * cFuncs[2];
 
     // ----- begin source-location loop -----
-    for (int dir = 0; dir < nSources; dir++)   
+    for (int dir = 0; dir < 1; dir++)   
     {
-        dirName  = "../tsrc";
-        dirName += dir*8;
-        dirName += "/";
+        data.SetSourceLocation(8*dir);
 
-        tupleName[0] = "C2"; 
-        tupleName[0] += dirName;
-        tupleName[1] = "C3";
-        tupleName[1] += dirName;
+        tupleName[0] = "C2_src"; 
+        tupleName[0] += dir;
+        tupleName[1] = "C3_src";
+        tupleName[1] += dir;
 
-        cFuncs[0] = new TNtuple(tupleName[0].Data(), "cFuncs[0]", "t:R1:I1:R2:I2");
-        cFuncs[1] = new TNtuple(tupleName[1].Data(), "cFuncs[1]", "t:R1:I1:R2:I2");
+        cFuncs[0] = new TNtuple(tupleName[0].Data(), tupleName[0].Data(), "t:R1:I1:R2:I2");
+        cFuncs[1] = new TNtuple(tupleName[1].Data(), tupleName[1].Data(), "t:R1:I1:R2:I2");
 
         for (int file = 0; file < nFiles; file++) 
         {
-            // go to appropriate source directory file
-            baseName    = dirName;
-            baseName    += "nuc3pt.dat.";
-            fileNumber   = 608 + file * 8;             // gauge configuration id
-            fileName    = baseName;
-            fileName   += fileNumber;
+            data.SetFileNumber(608 + 8*file);
+            TString fileName = data.FileName();
 
-
-            // ----------------------------- open this data file and fill trees -------------------------
+            // ------------------ open this data file and fill trees ---------------
             inFile.open(fileName.Data());
             if (inFile.is_open())
             {
-                //cout << "\nSuccessfully Opened: " << fileName.Data() << " to fill Tree branches . . . \n";
                
-                // fill 2-pt correlation 
+                // --------------------- fill 2-pt correlation ---------------------
                 GotoLine(inFile, lineNumber_C2);
                 for (int t = 0; t < nTimes; t++)
                 {
-                        inFile >> data.t;
-                        inFile >> data.R1;
-                        inFile >> data.I1;
-                        inFile >> data.R2;
-                        inFile >> data.I2;
+                    data.GetLine(inFile);
+                    cFuncs[0]->Fill(data.Time(), data.R1(), data.I1(), data.R2(), data.I2());
 
-                        cFuncs[0]->Fill(data.t, data.R1, data.I1, data.R2, data.I2);
-
-                    if (fileNumber < 630)
+                    if (file < 2)
                     {
-                        if (t == 0)
-                        {
-                            cout << "\n\nTWO POINT CORRELATION: " << fileName.Data() << "\n\n"; 
-                        }
-                        cout << data.t  << "\t";
-                        cout << data.R1 << "\t";
-                        cout << data.I1 << "\t";
-                        cout << data.R2 << "\t";
-                        cout << data.I2 << endl;
+                        if (t == 0) cout << "\n\nTWO POINT CORRELATION: " << fileName.Data() << "\n\n"; 
+                        data.Print();
                     }
                 }
 
-                // fill 3-pt correlation 
+                // --------------------- fill 3-pt correlation ---------------------
                 GotoLine(inFile, lineNumber_C3);
                 for (int t = 0; t < nTimes; t++)
                 {
-                        inFile >> data.t;
-                        inFile >> data.R1;
-                        inFile >> data.I1;
-                        inFile >> data.R2;
-                        inFile >> data.I2;
-
+                    data.GetLine(inFile);
                     if (t != 9 + 8*dir)
                     {
-                        cFuncs[1]->Fill(data.t, data.R1, data.I1, data.R2, data.I2);
+                        cFuncs[1]->Fill(data.Time(), data.R1(), data.I1(), data.R2(), data.I2());
                     }
                     else
                     {
                         cFuncs[1]->Fill(0, 0, 0, 0, 0);
                     }
                     
-                    if (fileNumber < 630)
+                    if (file < 2)
                     {
 
-                        if (t == 0)
-                        {
-                            cout << "\n\nTHREE POINT CORRELATION: " << fileName.Data() << "\n\n"; 
-                        }
-                        cout << data.t  << "\t";
-                        cout << data.R1 << "\t";
-                        cout << data.I1 << "\t";
-                        cout << data.R2 << "\t";
-                        cout << data.I2 << endl;
+                        if (t == 0) cout << "\n\nTHREE POINT CORRELATION: " << fileName.Data() << "\n\n"; 
+                        data.Print();
                     }
 
                 }
