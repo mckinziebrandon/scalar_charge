@@ -37,40 +37,20 @@ Int_t plot_scalar_charge()
     }
 
     // performs final average over bin contents
-    Float_t real_avg(0), imag_avg(0);
-    Float_t real_err(0), imag_err(0);
+    Complex average, error;
     for (int t = 0; t < nTimes; t++)
     {
-        real_avg = 0;
-        imag_avg = 0;
+        average.SetReal(AverageOverFiles(jth_ratio_hist_real, t+1, nFiles));
+        average.SetImag(AverageOverFiles(jth_ratio_hist_imag, t+1, nFiles));
 
-        // ========= calculate average of jackknife points ===========
-        for (int j = 0; j < nFiles; j++)
-        {
-            real_avg += jth_ratio_hist_real[j]->GetBinContent(t+1); 
-            imag_avg += jth_ratio_hist_imag[j]->GetBinContent(t+1); 
-        }
+        error.SetReal(ErrorOverFiles(jth_ratio_hist_real, t+1, nFiles, average.GetReal()));
+        error.SetImag(ErrorOverFiles(jth_ratio_hist_imag, t+1, nFiles, average.GetImag()));
 
-        real_avg = real_avg / Float_t(nFiles);
-        imag_avg = imag_avg / Float_t(nFiles);
+        g_scalar->SetBinContent(t+1, average.GetReal());
+        g_scalar_imag->SetBinContent(t+1, average.GetImag());
 
-        g_scalar->SetBinContent(t+1, real_avg);
-        g_scalar_imag->SetBinContent(t+1, imag_avg);
-        // ===========================================================
-
-        // ========================== calculate jackknife errors =============================
-        for (int j = 0; j < nFiles; j++)
-        {
-            real_err += TMath::Power(jth_ratio_hist_real[j]->GetBinContent(t+1) - real_avg, 2);
-            imag_err += TMath::Power(jth_ratio_hist_imag[j]->GetBinContent(t+1) - imag_avg, 2);
-        }
-
-        real_err = TMath::Sqrt((Float_t)((nFiles-1)/nFiles) * real_err);
-        imag_err = TMath::Sqrt((Float_t)((nFiles-1)/nFiles) * imag_err);
-
-        g_scalar->SetBinError(t+1, real_err);
-        g_scalar_imag->SetBinError(t+1, imag_err);
-        // ===================================================================================
+        g_scalar->SetBinError(t+1, error.GetReal());
+        g_scalar_imag->SetBinError(t+1, error.GetImag());
     }
 
     // ========================== Drawing ==========================
@@ -88,11 +68,11 @@ Int_t plot_scalar_charge()
 
     MyC->cd();
     pad1->cd(1);
-    g_scalar->Draw("PE2");
+    g_scalar->Draw("PE1");
     legend->Draw();
 
     pad1->cd(2);
-    g_scalar_imag->Draw("PPE2");
+    g_scalar_imag->Draw("PE1");
     legend2->Draw();
     MyC->Update();
 

@@ -2,7 +2,8 @@
 Filename:       jackknife_analysis.cxx
 Author:         Brandon McKinzie
 Date Created:   July 02, 2015
-Description:    jk analysis...
+Description:    input is basic jackknife samples on correlation functions
+                output is jk sample of scalar charge ratio formula
 ==================================================================*/
 #include <iostream>
 #include <fstream>
@@ -50,46 +51,25 @@ void get_jackknife_ratios()
         jth_ratio_hist_imag[j]  = new TH1F(Form("%d_ratio_hist_imag", j) , "hist", 64, -0.5, 63.5);
     }
 
-    Float_t C3_u_real, C3_u_imag;
-    Float_t C3_d_real, C3_d_imag;
-    Float_t C2_real, C2_imag;
-
-    Float_t numer_real, numer_imag;
-    Float_t denom_real, denom_imag;
-
-    Float_t ratio_real, ratio_imag;
-
     // generates set of jackknife scalar charges (ratios) hists
+    Complex C2, C3_up_quark, C3_down_quark, scalar_charge;
     for (int t = 0; t < nTimes; t++)
     {
         for (int j = 0; j < nFiles; j++)
         {
-            numer_real = 0; numer_imag = 0;
-            denom_real = 0; denom_imag = 0;
+            C2.SetReal(jth_C2_hist_real[j]->GetBinContent(10));    
+            C2.SetImag(jth_C2_hist_imag[j]->GetBinContent(10));    
 
-            C2_real = jth_C2_hist_real[j]->GetBinContent(10);      // c
-            C2_imag = jth_C2_hist_imag[j]->GetBinContent(10);      // d
+            C3_up_quark.SetReal(jth_C3_u_hist_real[j]->GetBinContent(t+1));
+            C3_up_quark.SetImag(jth_C3_u_hist_imag[j]->GetBinContent(t+1));
+            
+            C3_down_quark.SetReal(jth_C3_d_hist_real[j]->GetBinContent(t+1));
+            C3_down_quark.SetImag(jth_C3_d_hist_imag[j]->GetBinContent(t+1));
 
-            C3_u_real = jth_C3_u_hist_real[j]->GetBinContent(t+1);  // a1
-            C3_u_imag = jth_C3_u_hist_imag[j]->GetBinContent(t+1);  // b1
-            C3_d_real = jth_C3_d_hist_real[j]->GetBinContent(t+1);  // a2
-            C3_d_imag = jth_C3_d_hist_imag[j]->GetBinContent(t+1);  // b2
+            scalar_charge = (C3_up_quark - C3_down_quark) / C2;
 
-            numer_real = C3_u_real - C3_d_real;
-            numer_imag = C3_u_imag - C3_d_imag;
-            denom_real = C2_real;
-            //denom_imag = C2_imag;
-            denom_imag = 0;
-
-            // complex division formula
-            ratio_real = (numer_real * denom_real) + (numer_imag * denom_imag);
-            ratio_real *= 1 / (denom_real*denom_real + denom_imag*denom_imag);
-
-            ratio_imag = (numer_imag * denom_real) - (numer_real * denom_imag);
-            ratio_imag *= 1 / (denom_real*denom_real + denom_imag*denom_imag);
-
-            jth_ratio_hist_real[j]->SetBinContent(t+1, ratio_real);
-            jth_ratio_hist_imag[j]->SetBinContent(t+1, ratio_imag);
+            jth_ratio_hist_real[j]->SetBinContent(t+1, scalar_charge.GetReal());
+            jth_ratio_hist_imag[j]->SetBinContent(t+1, scalar_charge.GetImag());
             
             if (t == nTimes-1)
             {
