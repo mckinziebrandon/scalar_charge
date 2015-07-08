@@ -1,76 +1,6 @@
-#ifndef MY_FUNCTIONS_H
-#define MY_FUNCTIONS_H
-
+// myfunctions.cpp
 #include <iostream>
-#include <fstream>
-#include <string>
-#include <limits>
-#include <cstdlib>
-#include "TBranch.h"
-#include "TCanvas.h"
-#include "TDirectory.h"
-#include "TF1.h"
-#include "TFile.h"
-#include "TGraph.h"
-#include "TGraphErrors.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TH2F.h"
-#include "TLatex.h"
-#include "TLegend.h"
-#include "TMath.h"
-#include "TNtuple.h"
-#include "TPad.h"
-#include "TTree.h"
-#include "TROOT.h"
-#include "TStyle.h"
-
-
-// -------- frequently used constants --------
-const Int_t nFiles              = 165;
-const Int_t nTimes              = 64;
-const Int_t lineNumber_C3       = 10057;
-const Int_t lineNumber_C2       = 5007;
-const Int_t snk_src_difference  = 9;
-const Int_t nSources            = 7;
-// -------------------------------------------
-
-// ---------------------------------------------------
-std::fstream& GotoLine(std::fstream&, int);
-Double_t Cosh(Double_t*, Double_t*);
-Float_t AverageOverFiles(TH1F** histArray, Int_t inputBin, const Int_t n);
-Float_t ErrorOverFiles(TH1F** histArray, Int_t inputBin, const Int_t n, const Float_t avg);
-// ---------------------------------------------------
-
-class Data
-{
-public:
-    Int_t t;
-    Float_t R1;
-    Float_t I1;
-    Float_t R2;
-    Float_t I2;
-};
-
-class Complex
-{
-private:
-    Float_t real;
-    Float_t imag;
-    Float_t magnitude;
-    void set_mag();
-public:
-    Complex();
-    Complex(Float_t re, Float_t im); // not implemented
-    Float_t GetReal() const;   
-    Float_t GetImag() const;
-    Float_t GetMagnitude() const;
-    void SetReal(Float_t re);   
-    void SetImag(Float_t im);
-    Complex operator+(const Complex & c) const;
-    Complex operator-(const Complex & c) const;
-    Complex operator/(const Complex & c) const;
-};
+#include "my_functions.h"
 
 // ==================== CLASS METHODS/DECLARATIONS ====================
 
@@ -99,18 +29,6 @@ Float_t Complex::GetImag() const
 Float_t Complex::GetMagnitude() const
 {
     return magnitude;
-}
-
-void Complex::SetReal(Float_t re)
-{
-    real = re; 
-    magnitude = TMath::Sqrt(re*re + imag*imag);
-}
-
-void Complex::SetImag(Float_t im)
-{
-    imag = im; 
-    magnitude = TMath::Sqrt(real*real + im*im);
 }
 
 void Complex::set_mag()
@@ -191,4 +109,3 @@ Float_t ErrorOverFiles(TH1F** histArray, Int_t inputBin, const Int_t n, const Fl
     return TMath::Sqrt(result * Float_t(n-1)/n);
 }
 
-#endif
