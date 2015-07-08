@@ -1,0 +1,16 @@
+07/08/2015:
+
+------------------- GET_CORRELATION_FUNCTIONS ---------------------------
+-> get_correlation_functions.cxx correctly outputs all raw data from *.608 
+-> -> and *.616
+-> I am confident that get_correlation_functions is correctly obtaining data
+--> less confident that it's actually being stored well. 
+
+------------------- GET_JACKKNIFE_MEANS ---------------------------
+-> UPDATE: data is confirmed as stored from get_correlation_functions.
+--> get_jacknife_means.cxx obtains correct data in function log before performing operations.
+--> The rest of the file operations are so self-evident and elementary that I believe no further tests are needed (on get_jackknife_means)
+NOTE: ALL ABOVE TESTS WERE ONLY ON THE THREE-POINT CORRELATION FUNCTIONS
+
+------------------- GET_JACKKNIFE_RATIOS ---------------------------
+
