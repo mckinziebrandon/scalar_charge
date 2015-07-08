@@ -18,7 +18,8 @@ void get_correlation_functions()
     using std::endl;
     
     // variables
-    TString baseName, branchName, directory, fileName; 
+    TString baseName, branchName, dirName, fileName; 
+    TString tupleName[2];
     Int_t fileNumber;
 
     // file associations
@@ -28,76 +29,116 @@ void get_correlation_functions()
 
     // objects for storing raw data
     Data data;
-    TNtuple * C3_tuple = new TNtuple("C3_tuple", "C3_tuple", "t:R1:I1:R2:I2");
-    TNtuple * C2_tuple = new TNtuple("C2_tuple", "C2_tuple", "t:R1:I1:R2:I2");
+    TNtuple * cFuncs[2];
 
-    for (int file = 0; file < nFiles; file++) 
+    // ----- begin source-location loop -----
+    for (int dir = 0; dir < nSources; dir++)   
     {
-        // go to appropriate source directory file
-        baseName     = "../tsrc0/nuc3pt.dat.";
-        fileNumber   = 608 + file * 8;             // gauge configuration id
-        fileName    = baseName;
-        fileName   += fileNumber;
+        dirName  = "../tsrc";
+        dirName += dir*8;
+        dirName += "/";
 
+        tupleName[0] = "C2"; 
+        tupleName[0] += dirName;
+        tupleName[1] = "C3";
+        tupleName[1] += dirName;
 
-        // ----------------------------- open this data file and fill trees -------------------------
-        inFile.open(fileName.Data());
-        if (inFile.is_open())
+        cFuncs[0] = new TNtuple(tupleName[0].Data(), "cFuncs[0]", "t:R1:I1:R2:I2");
+        cFuncs[1] = new TNtuple(tupleName[1].Data(), "cFuncs[1]", "t:R1:I1:R2:I2");
+
+        for (int file = 0; file < nFiles; file++) 
         {
-            cout << "\nSuccessfully Opened: " << fileName.Data() << " to fill Tree branches . . . \n";
-           
-            // fill 2-pt correlation 
-            GotoLine(inFile, lineNumber_C2);
-            for (int t = 0; t < nTimes; t++)
+            // go to appropriate source directory file
+            baseName    = dirName;
+            baseName    += "nuc3pt.dat.";
+            fileNumber   = 608 + file * 8;             // gauge configuration id
+            fileName    = baseName;
+            fileName   += fileNumber;
+
+
+            // ----------------------------- open this data file and fill trees -------------------------
+            inFile.open(fileName.Data());
+            if (inFile.is_open())
             {
-                    inFile >> data.t;
-                    inFile >> data.R1;
-                    inFile >> data.I1;
-                    inFile >> data.R2;
-                    inFile >> data.I2;
+                //cout << "\nSuccessfully Opened: " << fileName.Data() << " to fill Tree branches . . . \n";
+               
+                // fill 2-pt correlation 
+                GotoLine(inFile, lineNumber_C2);
+                for (int t = 0; t < nTimes; t++)
+                {
+                        inFile >> data.t;
+                        inFile >> data.R1;
+                        inFile >> data.I1;
+                        inFile >> data.R2;
+                        inFile >> data.I2;
 
-                    C2_tuple->Fill(data.t, data.R1, data.I1, data.R2, data.I2);
-            }
+                        cFuncs[0]->Fill(data.t, data.R1, data.I1, data.R2, data.I2);
 
-            // fill 3-pt correlation 
-            GotoLine(inFile, lineNumber_C3);
-            for (int t = 0; t < nTimes; t++)
+                    if (fileNumber < 630)
+                    {
+                        if (t == 0)
+                        {
+                            cout << "\n\nTWO POINT CORRELATION: " << fileName.Data() << "\n\n"; 
+                        }
+                        cout << data.t  << "\t";
+                        cout << data.R1 << "\t";
+                        cout << data.I1 << "\t";
+                        cout << data.R2 << "\t";
+                        cout << data.I2 << endl;
+                    }
+                }
+
+                // fill 3-pt correlation 
+                GotoLine(inFile, lineNumber_C3);
+                for (int t = 0; t < nTimes; t++)
+                {
+                        inFile >> data.t;
+                        inFile >> data.R1;
+                        inFile >> data.I1;
+                        inFile >> data.R2;
+                        inFile >> data.I2;
+
+                    if (t != 9 + 8*dir)
+                    {
+                        cFuncs[1]->Fill(data.t, data.R1, data.I1, data.R2, data.I2);
+                    }
+                    else
+                    {
+                        cFuncs[1]->Fill(0, 0, 0, 0, 0);
+                    }
+                    
+                    if (fileNumber < 630)
+                    {
+
+                        if (t == 0)
+                        {
+                            cout << "\n\nTHREE POINT CORRELATION: " << fileName.Data() << "\n\n"; 
+                        }
+                        cout << data.t  << "\t";
+                        cout << data.R1 << "\t";
+                        cout << data.I1 << "\t";
+                        cout << data.R2 << "\t";
+                        cout << data.I2 << endl;
+                    }
+
+                }
+            } 
+            else
             {
-                    inFile >> data.t;
-                    inFile >> data.R1;
-                    inFile >> data.I1;
-                    inFile >> data.R2;
-                    inFile >> data.I2;
-
-                if (t != 9)
-                {
-                    C3_tuple->Fill(data.t, data.R1, data.I1, data.R2, data.I2);
-                }
-                else
-                {
-                    C3_tuple->Fill(0, 0, 0, 0, 0);
-                }
-                
-                if (fileNumber == 608)
-                {
-                    cout << data.t  << "\t";
-                    cout << data.R1 << "\t";
-                    cout << data.I1 << "\t";
-                    cout << data.R2 << "\t";
-                    cout << data.I2 << endl;
-                }
-
+                cout << "\nError: Could not open " << fileName.Data() << endl;
             }
-        } 
-        else
-        {
-            cout << "\nError: Could not open " << fileName.Data() << endl;
-        }
-        // --------------------------------------------------------------------------------------------
+            // --------------------------------------------------------------------------------------------
 
-        inFile.close();
-    } // end file loop  
+            inFile.close();
+        } // end file loop  
 
-    outFile->Write();
+        cFuncs[0]->Write();
+        cFuncs[1]->Write();
+
+        delete cFuncs[0];
+        delete cFuncs[1];
+
+    }  // ----- end source-location loop -----
+    
     outFile->Close();
 }
