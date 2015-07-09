@@ -13,7 +13,7 @@ Description:    outputs ntuples containing correlation function column data
 #include "../my_functions.h"
 #include "../my_data.h"
 
-void get_correlation_functions()
+Int_t get_correlation_functions()
 {
     using std::cout;
     using std::endl;
@@ -25,21 +25,22 @@ void get_correlation_functions()
 
     // objects for storing raw data
     Data data;
-    TString tupleName[2];
-    TNtuple * cFuncs[2];
+    TString tupleName;
+    TNtuple * C2; 
+    TNtuple * C3;
 
     // ----- begin source-location loop -----
-    for (int dir = 0; dir < 1; dir++)   
+    for (int src = 0; src < nSources; src++)   
     {
-        data.SetSourceLocation(8*dir);
+        data.SetSourceLocation(8*src);
 
-        tupleName[0] = "C2_src"; 
-        tupleName[0] += dir;
-        tupleName[1] = "C3_src";
-        tupleName[1] += dir;
+        tupleName = "C2_src"; 
+        tupleName += 8*src;
+        C2 = new TNtuple(tupleName.Data(), tupleName.Data(), "t:R1:I1:R2:I2");
 
-        cFuncs[0] = new TNtuple(tupleName[0].Data(), tupleName[0].Data(), "t:R1:I1:R2:I2");
-        cFuncs[1] = new TNtuple(tupleName[1].Data(), tupleName[1].Data(), "t:R1:I1:R2:I2");
+        tupleName = "C3_src"; 
+        tupleName += 8*src;
+        C3 = new TNtuple(tupleName.Data(), tupleName.Data(), "t:R1:I1:R2:I2");
 
         for (int file = 0; file < nFiles; file++) 
         {
@@ -55,8 +56,10 @@ void get_correlation_functions()
                 GotoLine(inFile, lineNumber_C2);
                 for (int t = 0; t < nTimes; t++)
                 {
+                    //data.GetLine(inFile);
                     data.GetLine(inFile);
-                    cFuncs[0]->Fill(data.Time(), data.R1(), data.I1(), data.R2(), data.I2());
+
+                    C2->Fill(data.Time(), data.R1(), data.I1(), data.R2(), data.I2());
 
                     if (file < 2)
                     {
@@ -70,13 +73,13 @@ void get_correlation_functions()
                 for (int t = 0; t < nTimes; t++)
                 {
                     data.GetLine(inFile);
-                    if (t != 9 + 8*dir)
+                    if (t != 9 + 8*src)
                     {
-                        cFuncs[1]->Fill(data.Time(), data.R1(), data.I1(), data.R2(), data.I2());
+                        C3->Fill(data.Time(), data.R1(), data.I1(), data.R2(), data.I2());
                     }
                     else
                     {
-                        cFuncs[1]->Fill(0, 0, 0, 0, 0);
+                        C3->Fill(0, 0, 0, 0, 0);
                     }
                     
                     if (file < 2)
@@ -97,13 +100,14 @@ void get_correlation_functions()
             inFile.close();
         } // end file loop  
 
-        cFuncs[0]->Write();
-        cFuncs[1]->Write();
+        C2->Write();
+        C3->Write();
 
-        delete cFuncs[0];
-        delete cFuncs[1];
+        delete C2;
+        delete C3;
 
     }  // ----- end source-location loop -----
     
     outFile->Close();
+    return 0;
 }

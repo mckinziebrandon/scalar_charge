@@ -21,12 +21,16 @@ public:
     Float_t R2() const;
     Float_t I2() const;
     void GetLine(std::fstream & f);
+//    void GetSourceAverage(Int_t time, Int_t fnum);
     Complex ColPair(Int_t pair) const;
     TString FileName() const;
     void SetSourceLocation(Int_t source);
     void SetFileNumber(Int_t n);
     void AddColPair(const Complex & c, Int_t pair);
     void Print() const;
+    Data operator+(const Data & d) const;
+    Data operator/(const Data & d) const;
+    void operator=(const Data & d);
 };
 
 Data::Data()
@@ -137,5 +141,36 @@ void Data::Print() const
     std::cout << imag_2 << std::endl;
 }
 
+
+Data Data::operator+(const Data & d) const
+{
+    Data sum;
+    sum.t = t + d.t;
+    sum.real_1 = real_1 + d.real_1;
+    sum.imag_1 = imag_1 + d.imag_1;
+    sum.real_2 = real_2 + d.real_2;
+    sum.imag_2 = imag_2 + d.imag_2;
+    return sum;
+}
+
+Data Data::operator/(const Data & d) const
+{
+    Data result;
+    result.t = t / d.t;
+    result.real_1 = real_1 / d.real_1;
+    result.imag_1 = imag_1 / d.imag_1;
+    result.real_2 = real_2 / d.real_2;
+    result.imag_2 = imag_2 / d.imag_2;
+    return result;
+}
+
+void Data::operator=(const Data & d)
+{
+    t = d.t;
+    real_1 = d.real_1;
+    imag_1 = d.imag_1;
+    real_2 = d.real_2;
+    imag_2 = d.imag_2;
+}
 
 #endif
