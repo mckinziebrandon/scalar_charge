@@ -32,8 +32,8 @@ Int_t plot_scalar_charge()
     // obtain jackknife ratio-histograms from input file
     for (int j = 0; j < nFiles; j++)
     {
-        jth_ratio_hist_real[j] = (TH1F*)f->Get(Form("%d_ratio_hist_real;1", j));
-        jth_ratio_hist_imag[j] = (TH1F*)f->Get(Form("%d_ratio_hist_imag;1", j));
+        jth_ratio_hist_real[j] = (TH1F*)f->Get(Form("%d_ratio_real;1", j));
+        jth_ratio_hist_imag[j] = (TH1F*)f->Get(Form("%d_ratio_imag;1", j));
     }
 
     // performs final average over bin contents
