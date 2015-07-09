@@ -51,7 +51,6 @@ Int_t get_correlation_functions()
             inFile.open(fileName.Data());
             if (inFile.is_open())
             {
-               
                 // --------------------- fill 2-pt correlation ---------------------
                 GotoLine(inFile, lineNumber_C2);
                 for (int t = 0; t < nTimes; t++)
@@ -98,6 +97,12 @@ Int_t get_correlation_functions()
             else
             {
                 cout << "\nError: Could not open " << fileName.Data() << endl;
+                for (int t = 0; t < nTimes; t++)
+                {
+                    C2->Fill(0, 0, 0, 0, 0);
+                    C3->Fill(0, 0, 0, 0, 0);
+                }
+                
             }
             // --------------------------------------------------------------------------------------------
 

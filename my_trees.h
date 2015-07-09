@@ -82,7 +82,12 @@ Data CorrelationTrees::SourceAveragedData(Data* d, Int_t corrNum, Int_t i)
     }
 
     for (Int_t k = 0; k < 4; k++)
-        avg[k] = avg[k] / nSources;
+    {
+        if (i / nTimes == 0 || i / nTimes == 2 || i / nTimes == 4)
+            avg[k] = avg[k] / (nSources-1);
+        else
+            avg[k] = avg[k] / nSources;
+    }
 
     Data result(avg[0], avg[1], avg[2], avg[3]);
     return result;

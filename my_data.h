@@ -22,11 +22,11 @@ public:
     Float_t R2() const;
     Float_t I2() const;
     void GetLine(std::fstream & f);
-//    void GetSourceAverage(Int_t time, Int_t fnum);
     Complex ColPair(Int_t pair) const;
     TString FileName() const;
     void SetSourceLocation(Int_t source);
     void SetFileNumber(Int_t n);
+    Int_t GetFileNumber();
     void AddColPair(const Complex & c, Int_t pair);
     void Print() const;
     Data operator+(const Data & d) const;
@@ -124,6 +124,11 @@ void Data::SetSourceLocation(Int_t source)
 void Data::SetFileNumber(Int_t n)
 {
     fileNumber = n;
+}
+
+Int_t Data::GetFileNumber()
+{
+    return fileNumber;
 }
 
 void Data::AddColPair(const Complex & c, Int_t pair)
