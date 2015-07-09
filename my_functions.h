@@ -42,16 +42,6 @@ Float_t AverageOverFiles(TH1F** histArray, Int_t inputBin, const Int_t n);
 Float_t ErrorOverFiles(TH1F** histArray, Int_t inputBin, const Int_t n, const Float_t avg);
 // ---------------------------------------------------
 
-class Data
-{
-public:
-    Int_t t;
-    Float_t R1;
-    Float_t I1;
-    Float_t R2;
-    Float_t I2;
-};
-
 class Complex
 {
 private:
@@ -104,13 +94,13 @@ Float_t Complex::GetMagnitude() const
 void Complex::SetReal(Float_t re)
 {
     real = re; 
-    magnitude = TMath::Sqrt(re*re + imag*imag);
+    this->set_mag();
 }
 
 void Complex::SetImag(Float_t im)
 {
     imag = im; 
-    magnitude = TMath::Sqrt(real*real + im*im);
+    this->set_mag();
 }
 
 void Complex::set_mag()

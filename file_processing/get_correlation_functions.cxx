@@ -61,11 +61,13 @@ Int_t get_correlation_functions()
 
                     C2->Fill(data.Time(), data.R1(), data.I1(), data.R2(), data.I2());
 
+                    /*
                     if (file < 2)
                     {
                         if (t == 0) cout << "\n\nTWO POINT CORRELATION: " << fileName.Data() << "\n\n"; 
                         data.Print();
                     }
+                    */
                 }
 
                 // --------------------- fill 3-pt correlation ---------------------
@@ -82,12 +84,14 @@ Int_t get_correlation_functions()
                         C3->Fill(0, 0, 0, 0, 0);
                     }
                     
+                    /*
                     if (file < 2)
                     {
 
                         if (t == 0) cout << "\n\nTHREE POINT CORRELATION: " << fileName.Data() << "\n\n"; 
                         data.Print();
                     }
+                    */
 
                 }
             } 

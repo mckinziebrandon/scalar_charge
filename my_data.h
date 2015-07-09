@@ -15,6 +15,7 @@ private:
     Float_t imag_2;
 public:
     Data();
+    Data(float, float, float, float);
     Int_t Time() const;
     Float_t R1() const;
     Float_t I1() const;
@@ -31,6 +32,8 @@ public:
     Data operator+(const Data & d) const;
     Data operator/(const Data & d) const;
     void operator=(const Data & d);
+
+    friend class CorrelationTrees;
 };
 
 Data::Data()
@@ -38,6 +41,15 @@ Data::Data()
     t = real_1 = imag_1 = real_2 = imag_2 = 0;
     fileNumber = 608;
     dirNumber = 0;
+}
+
+Data::Data(Float_t r1, Float_t i1, Float_t r2, Float_t i2)
+{
+    real_1 = r1;
+    imag_1 = i1;
+    real_2 = r2;
+    imag_2 = i2;
+    t = 0;
 }
 
 Int_t Data::Time() const
