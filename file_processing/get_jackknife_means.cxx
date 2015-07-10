@@ -26,9 +26,9 @@ void get_jackknife_means()
     TFile * outFile = new TFile("jackknife.root", "RECREATE");
     outFile->cd();
 
-    Float_t C2_time_file[nTimes][nFiles][2];
-    Float_t C3_u_time_file[nTimes][nFiles][2];
-    Float_t C3_d_time_file[nTimes][nFiles][2];
+    Float_t C2[nTimes][nFiles][2];
+    Float_t C3_u[nTimes][nFiles][2];
+    Float_t C3_d[nTimes][nFiles][2];
 
     Float_t jth_C2[nTimes][nFiles][2];
     Float_t jth_C3_u[nTimes][nFiles][2];
@@ -62,21 +62,26 @@ void get_jackknife_means()
     Int_t nEntries = (Int_t)CTrees->GetC3Tree(0)->GetEntries();
     for (int i = 0; i < nEntries; i++)
     {
-        timeslice = i%nTimes;
         avg_C2_data = CTrees->SourceAveragedData(C2_data, 2, i);
         avg_C3_data = CTrees->SourceAveragedData(C3_data, 3, i);
+
+        timeslice = i%nTimes;
+        avg_C2_data.SetTime(timeslice);
+        avg_C3_data.SetTime(timeslice);
     
         if (timeslice == 0 && i !=0)
         {
             fcount++;
+            avg_C2_data.SetFileNumber(fcount);
+            avg_C3_data.SetFileNumber(fcount);
         }
 
-        C2_time_file[timeslice][fcount][0]   = avg_C2_data.R1();
-        C2_time_file[timeslice][fcount][1]   = avg_C2_data.I1();
-        C3_u_time_file[timeslice][fcount][0] = avg_C3_data.R1();
-        C3_u_time_file[timeslice][fcount][1] = avg_C3_data.I1();
-        C3_d_time_file[timeslice][fcount][0] = avg_C3_data.R2();
-        C3_d_time_file[timeslice][fcount][1] = avg_C3_data.I2();
+        C2[timeslice][fcount][0]   = avg_C2_data.R1();
+        C2[timeslice][fcount][1]   = avg_C2_data.I1();
+        C3_u[timeslice][fcount][0] = avg_C3_data.R1();
+        C3_u[timeslice][fcount][1] = avg_C3_data.I1();
+        C3_d[timeslice][fcount][0] = avg_C3_data.R2();
+        C3_d[timeslice][fcount][1] = avg_C3_data.I2();
     }
     // -----------------------------------------------------------
 
@@ -97,13 +102,13 @@ void get_jackknife_means()
                 {
                     if (j != file)
                     {
-                        jth_C2[time][j][0] += C2_time_file[time][file][0];
-                        jth_C2[time][j][1] += C2_time_file[time][file][1];
+                        jth_C2[time][j][0] += C2[time][file][0];
+                        jth_C2[time][j][1] += C2[time][file][1];
 
-                        jth_C3_u[time][j][0] += C3_u_time_file[time][file][0];
-                        jth_C3_u[time][j][1] += C3_u_time_file[time][file][1];
-                        jth_C3_d[time][j][0] += C3_d_time_file[time][file][0];
-                        jth_C3_d[time][j][1] += C3_d_time_file[time][file][1];
+                        jth_C3_u[time][j][0] += C3_u[time][file][0];
+                        jth_C3_u[time][j][1] += C3_u[time][file][1];
+                        jth_C3_d[time][j][0] += C3_d[time][file][0];
+                        jth_C3_d[time][j][1] += C3_d[time][file][1];
                     }
                 }
 

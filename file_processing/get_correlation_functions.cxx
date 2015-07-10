@@ -32,66 +32,67 @@ Int_t get_correlation_functions()
     // ----- begin source-location loop -----
     for (int src = 0; src < nSources; src++)   
     {
-        data.SetSourceLocation(8*src);
+        data.SetSourceLocation(8*src);                                              
 
         tupleName = "C2_src"; 
-        tupleName += 8*src;
-        C2 = new TNtuple(tupleName.Data(), tupleName.Data(), "t:R1:I1:R2:I2");
+        tupleName += data.GetSourceLocation();
+        C2 = new TNtuple(tupleName.Data(), tupleName.Data(), "t:R1:I1:R2:I2");     
 
         tupleName = "C3_src"; 
-        tupleName += 8*src;
-        C3 = new TNtuple(tupleName.Data(), tupleName.Data(), "t:R1:I1:R2:I2");
+        tupleName += data.GetSourceLocation();
+        C3 = new TNtuple(tupleName.Data(), tupleName.Data(), "t:R1:I1:R2:I2");    
+
+        Int_t t_init    = data.GetSourceLocation();                              
+        Int_t t         = t_init;                                               
 
         for (int file = 0; file < nFiles; file++) 
         {
-            data.SetFileNumber(608 + 8*file);
+            data.SetFileNumber(608 + 8*file);                                  
             TString fileName = data.FileName();
 
             // ------------------ open this data file and fill trees ---------------
-            inFile.open(fileName.Data());
+            inFile.open(fileName.Data());                                     
             if (inFile.is_open())
             {
+                cout << "Opened: " << fileName.Data() << endl;
                 // --------------------- fill 2-pt correlation ---------------------
-                GotoLine(inFile, lineNumber_C2);
-                for (int t = 0; t < nTimes; t++)
+
+                t = t_init;
+                GotoLine(inFile, lineNumber_C2 + t_init);                    
+                while (t < nTimes)                                          
                 {
-                    //data.GetLine(inFile);
-                    data.GetLine(inFile);
-
-                    C2->Fill(data.Time(), data.R1(), data.I1(), data.R2(), data.I2());
-
-                    /*
-                    if (file < 2)
-                    {
-                        if (t == 0) cout << "\n\nTWO POINT CORRELATION: " << fileName.Data() << "\n\n"; 
-                        data.Print();
-                    }
-                    */
+                    data.GetLine(inFile);                                  
+                    C2->Fill(data.Time(), data.R1(), data.I1(), data.R2(), data.I2()); 
+                    t++;                                                            
                 }
 
-                // --------------------- fill 3-pt correlation ---------------------
-                GotoLine(inFile, lineNumber_C3);
-                for (int t = 0; t < nTimes; t++)
+                t = 0;
+                GotoLine(inFile, lineNumber_C2);
+                while (t < t_init)
                 {
                     data.GetLine(inFile);
-                    if (t != 9 + 8*src)
-                    {
-                        C3->Fill(data.Time(), data.R1(), data.I1(), data.R2(), data.I2());
-                    }
-                    else
-                    {
-                        C3->Fill(0, 0, 0, 0, 0);
-                    }
-                    
-                    /*
-                    if (file < 2)
-                    {
+                    C2->Fill(data.Time(), data.R1(), data.I1(), data.R2(), data.I2());
+                    t++;
+                }                                                                  
 
-                        if (t == 0) cout << "\n\nTHREE POINT CORRELATION: " << fileName.Data() << "\n\n"; 
-                        data.Print();
-                    }
-                    */
+                // --------------------- fill 3-pt correlation ---------------------
 
+                t = t_init;
+                GotoLine(inFile, lineNumber_C3 + t_init);
+                while (t < nTimes)
+                {
+                    data.GetLine(inFile);
+                    C3->Fill(data.Time(), data.R1(), data.I1(), data.R2(), data.I2());
+                    t++;
+                }
+
+                t = 0;
+                GotoLine(inFile, lineNumber_C3);
+                while (t < t_init)
+                {
+                    data.GetLine(inFile);
+                    C3->Fill(data.Time(), data.R1(), data.I1(), data.R2(), data.I2());
+                    t++;
                 }
             } 
             else
@@ -102,7 +103,6 @@ Int_t get_correlation_functions()
                     C2->Fill(0, 0, 0, 0, 0);
                     C3->Fill(0, 0, 0, 0, 0);
                 }
-                
             }
             // --------------------------------------------------------------------------------------------
 

@@ -68,20 +68,11 @@ Data CorrelationTrees::SourceAveragedData(Data* d, Int_t corrNum, Int_t i)
     Float_t avg[4];
     avg[0] = avg[1] = avg[2] = avg[3] = 0;
 
-    Int_t I;
-     
-
-    // translation and summation
-    for (Int_t src = 0; src < 1; src++)
+    // summation
+    for (Int_t src = 0; src < nSources; src++)
     {
-        // handle src-sink translation
-        if ((i+8*src)%nTimes < i%nTimes) 
-            I = (i-nTimes) + 8 * src;
-        else
-            I = i;
-
-        if      (corrNum == 2) C2[src]->GetEntry(I);
-        else if (corrNum == 3) C3[src]->GetEntry(I);
+        if      (corrNum == 2) C2[src]->GetEntry(i);
+        else if (corrNum == 3) C3[src]->GetEntry(i);
         else    std::cout << "\nYou messed something up.\n";
 
         avg[0] += d[src].real_1;
