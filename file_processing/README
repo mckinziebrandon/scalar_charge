@@ -12,5 +12,20 @@
 --> The rest of the file operations are so self-evident and elementary that I believe no further tests are needed (on get_jackknife_means)
 NOTE: ALL ABOVE TESTS WERE ONLY ON THE THREE-POINT CORRELATION FUNCTIONS
 
-------------------- GET_JACKKNIFE_RATIOS ---------------------------
+##################################################################################################
+
+07/10/2015: DDAY == DEBUGGING DAY ; THE END OF TIMES ; THE END OF ERRORS ; TIME IS NOW
+
+------------------- GET_CORRELATION_FUNCTIONS ---------------------------
+C2:
+==> data.Getline(inFile) retrieves & loops data correctly. 
+==> data.Getline(inFile) time-translates data correctly.
+==> data acquisition in general is perfect BEFORE actually filling nTuples. 
+==> entries are going into C2 Ntuple. I have no reason to believe they are being collected wrong.
+    I am confident this is NOT the source of the error I'm searching for. 
+
+==> In fact, I am confident the entire file is correct. The problem is not here. It is just not possible. 
+
+------------------- GET_JACKKNIFE_MEANS ---------------------------
+OH MY FUCKING GOD ARE YOU KIDDING ME IT WAS ONE GODDAMN NUMBER?????? THATS IT???
 
