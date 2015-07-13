@@ -10,7 +10,8 @@ Description:    jk analysis...
 #include <limits>
 #include <cstdlib>
 
-#include "my_functions.h"
+#include "include/my_functions.h"
+#include "TGaxis.h"
 
 Int_t plot_scalar_charge()
 {
@@ -19,15 +20,15 @@ Int_t plot_scalar_charge()
 
     const Int_t nFiles = 164;
 
-    TFile * f       = new TFile("analysis.root");
-    TFile * outFile = new TFile("scalar_charge.root", "RECREATE");
+    TFile * f       = new TFile("rootFiles/analysis.root");
+    TFile * outFile = new TFile("rootFiles/scalar_charge.root", "RECREATE");
     outFile->cd();
 
     TH1F * jth_ratio_hist_real[nFiles];
     TH1F * jth_ratio_hist_imag[nFiles];
 
-    TH1F * g_scalar         = new TH1F("g_scalar", "g_scalar", 64, -0.5, 63.5);
-    TH1F * g_scalar_imag    = new TH1F("g_scalar_imag", "g_scalar imaginary", 64, -0.5, 63.5);
+    TH1F * g_scalar         = new TH1F("g_scalar", "g_scalar", 8, -0.5, 7.5);
+    TH1F * g_scalar_imag    = new TH1F("g_scalar_imag", "g_scalar imaginary", 8, -0.5, 7.5);
 
     // obtain jackknife ratio-histograms from input file
     for (int j = 0; j < nFiles; j++)
@@ -38,7 +39,7 @@ Int_t plot_scalar_charge()
 
     // performs final average over bin contents
     Complex average, error;
-    for (int t = 0; t < nTimes; t++)
+    for (int t = 0; t < 8; t++)
     {
         average.SetReal(AverageOverFiles(jth_ratio_hist_real, t+1, nFiles));
         average.SetImag(AverageOverFiles(jth_ratio_hist_imag, t+1, nFiles));
@@ -76,6 +77,7 @@ Int_t plot_scalar_charge()
     legend2->Draw();
     MyC->Update();
 
+    g_scalar->Write();
     gROOT->ForceStyle();
     return 0;
 }

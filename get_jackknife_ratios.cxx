@@ -11,10 +11,10 @@ Description:    input is basic jackknife samples on correlation functions
 #include <limits>
 #include <cstdlib>
 
-#include "my_functions.h"
-#include "my_data.h"
-#include "my_trees.h"
-#include "my_hists.h"
+#include "include/my_functions.h"
+#include "include/my_data.h"
+#include "include/my_trees.h"
+#include "include/my_hists.h"
 
 void get_jackknife_ratios()
 {
@@ -23,8 +23,8 @@ void get_jackknife_ratios()
 
     const Int_t nFiles = 164;
 
-    TFile * f = new TFile("./file_processing/jackknife.root");
-    TFile * outFile = new TFile("analysis.root", "RECREATE");
+    TFile * f = new TFile("rootFiles/jackknife.root");
+    TFile * outFile = new TFile("rootFiles/analysis.root", "RECREATE");
     outFile->cd();
 
     TH1F * jth_C2_hist_real[nFiles];    
