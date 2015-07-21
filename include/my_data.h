@@ -116,7 +116,7 @@ Complex Data::ColPair(Int_t pair) const
 TString Data::FileName() const
 {
     TString str;
-    str = "../tsrc";
+    str  = "/home/brandon/Brookhaven_Research/ID32_mu0.0042/nuc3pt/unpol/nuc3pt/tsrc";
     str += dirNumber;
     str += "/nuc3pt.dat.";
     str += fileNumber;

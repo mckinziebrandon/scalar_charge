@@ -11,6 +11,7 @@ private:
     TH1F * C3_down[nFiles][2];
 public:
     JackHistGroup();
+    JackHistGroup(TFile* f);
     ~JackHistGroup();
     TH1F* GetC2(Int_t j, TString str);
     TH1F* GetC3_up(Int_t j, TString str);
@@ -30,6 +31,19 @@ JackHistGroup::JackHistGroup()
     }
 }
 
+JackHistGroup::JackHistGroup(TFile* f)
+{
+    for (int j = 0; j < nFiles; j++)
+    {
+        C2[j][0]        = (TH1F*)f->Get(Form("C2_real_j_%d;1", j));
+        C2[j][1]        = (TH1F*)f->Get(Form("C2_imag_j_%d;1", j));
+        C3_up[j][0]     = (TH1F*)f->Get(Form("C3_u_real_j_%d;1", j));
+        C3_up[j][1]     = (TH1F*)f->Get(Form("C3_u_imag_j_%d;1", j));
+        C3_down[j][0]   = (TH1F*)f->Get(Form("C3_d_real_j_%d;1", j));
+        C3_down[j][1]   = (TH1F*)f->Get(Form("C3_d_imag_j_%d;1", j));
+    }
+
+}
 JackHistGroup::~JackHistGroup()
 {
     for (int j = 0; j < nFiles; j++)

@@ -18,7 +18,7 @@ Int_t jk_fit()
     using std::endl;
     
     const Int_t nFiles = 164;
-    Float_t fit_val, fit_err;
+    Float_t fit_val(0), fit_err(0);
 
 
     TFile * f       = new TFile("../rootFiles/analysis.root");
@@ -77,7 +77,8 @@ Int_t jk_fit()
 
     TLegend * leg = new TLegend(0.15, 0.91, 0.62, 0.98);
     leg->AddEntry(g_scalar, "Re(g_{s})", "PE");
-    leg->AddEntry((TObject*)0, Form("Jackknife Fit: %.3f #pm %.3f", fit_val, fit_err), "");
+    leg->AddEntry((TObject*)0, Form("Jackknife Fit: %.3f", fit_val), "");
+    leg->AddEntry((TObject*)0, Form("#Chi^{2}: %.3f", fit_err), "");
     leg->Draw();
 
     return 0;
