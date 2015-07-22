@@ -37,18 +37,22 @@ void get_jackknife_means()
     Data C3_data[nSources];
     Data avg_C2_data;
     Data avg_C3_data;
+    Data src_data;
 
     // ===== initialize source-specific trees that hold input data =====
 
+    Int_t src_arr[nSources] = {0, 16, 32, 48};
     TString tupleName;
     for (Int_t src = 0; src < nSources; src++)
     {
+        src_data.SetSourceLocation(src_arr[src]);
+        
         tupleName = "C2_src"; 
-        tupleName += 8*src;
+        tupleName += src_data.GetSourceLocation();
         CTrees->SetC2Tree(src, (TTree*)f->Get(tupleName.Data()));
 
         tupleName = "C3_src"; 
-        tupleName += 8*src;
+        tupleName += src_data.GetSourceLocation();
         CTrees->SetC3Tree(src, (TTree*)f->Get(tupleName.Data()));
     }
     CTrees->SetBranchAddresses(C2_data, C3_data);

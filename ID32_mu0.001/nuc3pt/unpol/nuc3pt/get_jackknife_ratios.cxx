@@ -21,10 +21,8 @@ void get_jackknife_ratios()
     using std::cout;
     using std::endl;
 
-    const Int_t nFiles = 164;
-
     TFile * f = new TFile("rootFiles/jackknife.root");
-    TFile * outFile = new TFile("rootFiles/analysis.root", "RECREATE");
+    TFile * outFile = new TFile("rootFiles/ratios.root", "RECREATE");
     outFile->cd();
 
     TH1F * jth_C2_hist_real[nFiles];    
@@ -60,7 +58,6 @@ void get_jackknife_ratios()
     {
         for (int j = 0; j < nFiles; j++)
         {
-            
             C2.SetReal(jth_C2_hist_real[j]->GetBinContent(10));    
             C2.SetImag(jth_C2_hist_imag[j]->GetBinContent(10));    
             
@@ -74,7 +71,6 @@ void get_jackknife_ratios()
 
             jth_ratio_hist_real[j]->SetBinContent(t+1, scalar_charge.GetReal());
             jth_ratio_hist_imag[j]->SetBinContent(t+1, scalar_charge.GetImag());
-            
            
             if (t == nTimes-1)
             {

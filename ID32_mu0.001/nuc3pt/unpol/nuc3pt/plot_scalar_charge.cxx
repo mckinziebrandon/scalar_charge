@@ -20,7 +20,7 @@ Int_t plot_scalar_charge()
 
     const Int_t nFiles = 164;
 
-    TFile * f       = new TFile("rootFiles/analysis.root");
+    TFile * f       = new TFile("rootFiles/ratios.root");
     TFile * outFile = new TFile("rootFiles/scalar_charge.root", "RECREATE");
     outFile->cd();
 

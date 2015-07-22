@@ -17,11 +17,9 @@ Int_t jk_fit()
     using std::cout;
     using std::endl;
     
-    const Int_t nFiles = 164;
     Float_t fit_val(0), fit_err(0);
 
-
-    TFile * f       = new TFile("../rootFiles/analysis.root");
+    TFile * f       = new TFile("../rootFiles/ratios.root");
     TFile * outFile = new TFile("../rootFiles/jk_fit.root", "RECREATE");
     outFile->cd();
 

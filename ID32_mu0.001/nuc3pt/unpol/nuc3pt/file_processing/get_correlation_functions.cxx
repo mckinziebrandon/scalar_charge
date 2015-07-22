@@ -49,6 +49,8 @@ Int_t get_correlation_functions()
         Int_t t         = t_init;                                               
         Int_t fNumber;
 
+        here_last = false;
+
         for (int file = 0; file < nFiles; file++) 
         {
             fNumber = data.GetFileNumber() + 8;
@@ -59,6 +61,7 @@ Int_t get_correlation_functions()
             if (inFile.is_open())
             {
                if (file == nFiles -1) cout << "\nOpened: " << fileName.Data() << endl;
+               if (here_last) cout << " --- " << fNumber - 8 << endl;
                 // --------------------- fill 2-pt correlation ---------------------
 
                 t = t_init;
@@ -101,12 +104,19 @@ Int_t get_correlation_functions()
 
                 here_last = false;
             } 
-            else
+            else if (fNumber == 1476 && src != 0) // this file is missing in all but the first source
             {
-                if (here_last)  cout << ", " << data.GetFileNumber();
-                else
+                for (int t = 0; t < nTimes; t++)
                 {
-                    cout << "\n\nError: Could not open " << fileName.Data(); 
+                    C2->Fill(0, 0, 0, 0, 0);
+                    C3->Fill(0, 0, 0, 0, 0);
+                }
+            }
+            else 
+            {
+                if (!here_last)
+                {
+                    cout << "\nError: Could not open " << fileName.Data(); 
                     here_last = true;
                 }
                 file = file - 1;
@@ -114,10 +124,6 @@ Int_t get_correlation_functions()
             // --------------------------------------------------------------------------------------------
 
             inFile.close();
-            if (fNumber > 2388) {
-                cout << "\n\n FUCKING\n\n\n";
-                break;
-            }
         } // end file loop  
 
         C2->Write();
