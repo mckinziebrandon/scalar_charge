@@ -79,6 +79,7 @@ Data CorrelationTrees::SourceAveragedData(Data* d, Int_t corrNum, Int_t i)
         avg[1] += d[src].imag_1;
         avg[2] += d[src].real_2;
         avg[3] += d[src].imag_2;
+        
     }
 
     // division

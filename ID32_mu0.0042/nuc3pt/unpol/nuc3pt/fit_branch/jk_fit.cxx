@@ -19,15 +19,17 @@ Int_t jk_fit()
     
     Float_t fit_val(0), fit_err(0);
     Float_t fit_errr(0);
+
     Float_t fits[nFiles];
 
-    TFile * f       = new TFile("../rootFiles/ratios.root");
+    TFile * f       = new TFile("../rootFiles/analysis.root");
     TFile * outFile = new TFile("../rootFiles/jk_fit.root", "RECREATE");
     outFile->cd();
 
     TH1F * jth_ratio_hist_real[nFiles];
     TH1F * g_scalar  = new TH1F("g_scalar", ";t;g_{s}(t)", 8, -0.5, 7.5);
     g_scalar->SetMarkerStyle(22);
+    g_scalar->SetMarkerSize(1);
     g_scalar->GetXaxis()->CenterTitle();
     g_scalar->GetYaxis()->CenterTitle();
 
@@ -42,6 +44,10 @@ Int_t jk_fit()
     // and fit/calculate errors
     for (int j = 0; j < nFiles; j++)
     {
+
+        f_const->SetParameter("const", 5.);
+        f_const->SetParError(0, 0);
+
         jth_ratio_hist_real[j] = (TH1F*)f->Get(Form("%d_ratio_real;1", j));
         jth_ratio_hist_real[j]->Draw("PE1");
         jth_ratio_hist_real[j]->Fit("f_const", "MR0");
@@ -51,19 +57,21 @@ Int_t jk_fit()
         fit_err += f_const->GetChisquare();
     }
 
+
     fit_val = fit_val / (Float_t)nFiles;
     fit_err = fit_err / (Float_t)nFiles;
 
-    for(int j = 0; j < nFiles; j++)
+    fit_errr = 0;
+    for (int j = 0; j < nFiles; j++)
     {
-        fit_errr +=  TMath::Power(fits[j] - fit_val, 2);
+       fit_errr += TMath::Power(fits[j] - fit_val, 2);
     }
 
     fit_errr = TMath::Sqrt(fit_errr * Float_t(nFiles-1)/nFiles);
-
-    fit_val /= 3.2;
-    fit_err /= 3.2;
     fit_errr /= 3.2;
+
+    fit_val = fit_val / 3.2;
+    fit_err = fit_err / 3.2;
 
     ofstream out;
     out.open("fit.txt");
@@ -72,16 +80,22 @@ Int_t jk_fit()
     out.close();
 
     // performs final average over bin contents
-    Float_t average, error;
+    Float_t average, error, avg_error(0);
     for (int t = 0; t < 8; t++)
     {
         average = AverageOverFiles(jth_ratio_hist_real, t+1, nFiles);
         error   = ErrorOverFiles(jth_ratio_hist_real, t+1, nFiles, average);
+
         average /= 3.2;
         error /= 3.2;
+
+        if (t > 2 && t < 6) avg_error += error;
+
         g_scalar->SetBinContent(t+1, average);
         g_scalar->SetBinError(t+1, error);
     }
+
+    avg_error /= 3;
 
     // ========================== Drawing ==========================
     TCanvas * MyC = new TCanvas("MyC", "Canvas", 1000, 600);
@@ -98,6 +112,7 @@ Int_t jk_fit()
     leg->AddEntry(g_scalar, "Re(g_{s})", "PE");
     leg->AddEntry((TObject*)0, Form("Jackknife Fit: %.3f #pm %.3f", fit_val, fit_errr), "");
     leg->AddEntry((TObject*)0, Form("#Chi^{2}: %.3f", fit_err), "");
+    leg->AddEntry((TObject*)0, Form("AvgStatErr: %.3f", avg_error), "");
     leg->Draw();
 
     return 0;
