@@ -24,6 +24,8 @@ Int_t jk_fit()
     Float_t fit_err = 0; Float_t fit_err_exact = 0; Float_t fit_err_ama = 0;
     Float_t fits[nJack]; Float_t fits_exact[nFiles];Float_t fits_ama[nFiles];
 
+    Float_t fits_improved[nFiles];
+
     Float_t fit_val_improved(0), fit_err_improved(0);
     Float_t average(0), error(0);
     Float_t avg_exact(0), err_exact(0);
@@ -53,13 +55,14 @@ Int_t jk_fit()
     f_const->SetParameter("const", 5.);
 
     // obtain jackknife ratio-histograms from input file
+    TH1F * g[nFiles];
     for (int j = 0; j < nJack; j++)
     {
         // --- Obtain & fit ama jk histograms ---
         jth_ratio[j] = (TH1F*)f->Get(Form("%d_ratio_real;1", j));
         jth_ratio[j]->Draw("PE1");
         jth_ratio[j]->Fit("f_const", "MR0");
-        fits[j] = f_const->GetParameter("const");
+        fits[j] = f_const->GetParameter("const")/norm_ama;
         fit_val += fits[j];
 
         // --- Repeat for (g_exact - g_appx) terms
@@ -68,50 +71,31 @@ Int_t jk_fit()
             jth_ratio_exact[j] = (TH1F*)f_small_exact->Get(Form("%d_ratio_real;1", j));
             jth_ratio_exact[j]->Draw("PE1");
             jth_ratio_exact[j]->Fit("f_const", "MR0");
-            fits_exact[j]  = f_const->GetParameter("const");
+            fits_exact[j]  = f_const->GetParameter("const")/norm_exact;
             fit_val_exact += fits_exact[j];
 
             jth_ratio_ama[j] = (TH1F*)f_small_ama->Get(Form("%d_ratio_real;1", j));
             jth_ratio_ama[j]->Draw("PE1");
             jth_ratio_ama[j]->Fit("f_const", "MR0");
-            fits_ama[j]  = f_const->GetParameter("const");
+            fits_ama[j]  = f_const->GetParameter("const")/norm_ama;
             fit_val_ama += fits_ama[j];
         }
+        fits_improved[j] = fits[j] + fits_exact[j] - fits_ama[j];
+        g[j] = new TH1F(Form("g_%d", j), "hist", 64, -0.5, 63.5);
     }
     fit_val         /= (Float_t)nJack;
     fit_val_exact   /= (Float_t)nFiles;
     fit_val_ama     /= (Float_t)nFiles;
+    fit_val_improved = fit_val + fit_val_exact - fit_val_ama;
 
     // calculate average and jk error
-    for(int j = 0; j < nJack; j++)
+    for(int j = 0; j < nJack; j++) 
     {
-        fit_err += TMath::Power(fits[j] - fit_val, 2);
-
-        if (j < nFiles)
-        {
-            fit_err_exact   += TMath::Power(fits_exact[j] - fit_val_exact, 2);
-            fit_err_ama     += TMath::Power(fits_ama[j] - fit_val_ama, 2);
-        }
+        fit_err_improved += TMath::Power(fits_improved[j] - fit_val_improved, 2);
     }
-    fit_err         = TMath::Sqrt(fit_err * Float_t(nJack-1)/nJack);
-    fit_err_exact   = TMath::Sqrt(fit_err_exact * Float_t(nFiles-1)/nFiles);
-    fit_err_ama     = TMath::Sqrt(fit_err_ama * Float_t(nFiles-1)/nFiles);
-
-    // normalization
-    fit_val /= norm_ama; fit_val_exact /= norm_exact; fit_val_ama /= norm_ama;
-    fit_err /= norm_ama; fit_err_exact /= norm_exact; fit_val_ama /= norm_ama;
-
-    cout << "\nfit_val = " << fit_val;
-    cout << "\nfit_val_exact = " << fit_val_exact;
-    cout << "\nfit_val_ama = " << fit_val_ama;
+    fit_err_improved = TMath::Sqrt(fit_err_improved * Float_t(nJack-1)/nJack);
 
     // combine for final improved estimator
-    //fit_val_improved = fit_val + fit_val_exact - fit_val_ama;
-    //fit_err_improved = fit_err + fit_err_exact + fit_err_ama;
-    fit_val_improved = fit_val + fit_val_exact - 1.85123;
-    fit_err_improved = fit_err + fit_err_exact + 1.34443;
-    fit_err_improved /= 3;
-
     cout << "\nFit val improved =\t" << fit_val_improved;
     cout << "\nFit err improved =\t" << fit_err_improved;
 
@@ -122,27 +106,19 @@ Int_t jk_fit()
     out.close();
 
     // performs final average over bin contents
+
+    for(int j = 0; j < nFiles; j++)
+    {
+        g[j]->Add(jth_ratio[j], 1/norm_ama);
+        g[j]->Add(jth_ratio_exact[j], 1/norm_exact);
+        g[j]->Add(jth_ratio_ama[j], -1/norm_ama);
+    }
+
     for (int t = 0; t < 8; t++)
     {
-        average  = AverageOverFiles(jth_ratio, t+1, nJack);
-        error    = ErrorOverFiles(jth_ratio, t+1, nJack, average);
-        average /= norm_ama;
-        error   /= norm_ama;
+        average_improved    = AverageOverFiles(g, t+1, nFiles);
+        error_improved      = ErrorOverFiles(g, t+1, nFiles, average_improved);
 
-        avg_exact  = AverageOverFiles(jth_ratio_exact, t+1, nFiles);
-        err_exact  = ErrorOverFiles(jth_ratio_exact, t+1, nFiles, avg_exact);
-        avg_exact /= norm_exact;
-        err_exact /= norm_exact;
-
-        avg_ama  = AverageOverFiles(jth_ratio_ama, t+1, nFiles);
-        err_ama  = ErrorOverFiles(jth_ratio_ama, t+1, nFiles, avg_ama);
-        avg_ama /= norm_ama;
-        err_ama /= norm_ama;
-
-        average_improved = average + avg_exact - avg_ama;
-        error_improved = error + err_exact + err_ama;
-        error_improved /= 3;
-        
         if (t == 4)
         {
             cout << "\naverage = " << average;

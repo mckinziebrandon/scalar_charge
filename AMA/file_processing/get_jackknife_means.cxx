@@ -60,10 +60,11 @@ void get_jackknife_means()
 
     // ================== perform source average ==================
 
-    Int_t timeslice, fcount(0);
+    Int_t timeslice, fcount(0), pos(0);
     Int_t nEntries = (Int_t)CTrees->GetC3Tree(0)->GetEntries();
     for (int i = 0; i < nEntries; i++)
     {
+
         avg_C2_data = CTrees->SourceAveragedData(C2_data, 2, i);
         avg_C3_data = CTrees->SourceAveragedData(C3_data, 3, i);
 
@@ -71,27 +72,51 @@ void get_jackknife_means()
         avg_C2_data.SetTime(timeslice);
         avg_C3_data.SetTime(timeslice);
     
+        // if new file
         if (timeslice == 0 && i !=0)
         {
-            fcount++;
+            // if new spatial coordinates
+            if (fcount == 38)
+            {
+                fcount = 0;
+                pos++;
+            }
+            else
+            {
+                fcount++;
+            }
+
             avg_C2_data.SetFileNumber(fcount);
             avg_C3_data.SetFileNumber(fcount);
         }
 
-        C2[timeslice][fcount][0]   = avg_C2_data.R1();
-        C2[timeslice][fcount][1]   = avg_C2_data.I1();
-        C3_u[timeslice][fcount][0] = avg_C3_data.R1();
-        C3_u[timeslice][fcount][1] = avg_C3_data.I1();
-        C3_d[timeslice][fcount][0] = avg_C3_data.R2();
-        C3_d[timeslice][fcount][1] = avg_C3_data.I2();
+        if (pos == 0)
+        {
+            C2[timeslice][fcount][0]   = avg_C2_data.R1()/(Float_t)nPos;
+            C2[timeslice][fcount][1]   = avg_C2_data.I1()/(Float_t)nPos;
+            C3_u[timeslice][fcount][0] = avg_C3_data.R1()/(Float_t)nPos;
+            C3_u[timeslice][fcount][1] = avg_C3_data.I1()/(Float_t)nPos;
+            C3_d[timeslice][fcount][0] = avg_C3_data.R2()/(Float_t)nPos;
+            C3_d[timeslice][fcount][1] = avg_C3_data.I2()/(Float_t)nPos;
+        }
+        else
+        {
+            C2[timeslice][fcount][0]   += avg_C2_data.R1()/(Float_t)nPos;
+            C2[timeslice][fcount][1]   += avg_C2_data.I1()/(Float_t)nPos;
+            C3_u[timeslice][fcount][0] += avg_C3_data.R1()/(Float_t)nPos;
+            C3_u[timeslice][fcount][1] += avg_C3_data.I1()/(Float_t)nPos;
+            C3_d[timeslice][fcount][0] += avg_C3_data.R2()/(Float_t)nPos;
+            C3_d[timeslice][fcount][1] += avg_C3_data.I2()/(Float_t)nPos;
+        }
         if (i == nEntries-1) cout << "\nfcount = " << fcount << endl;
     }
+    cout << "\nnPos == " << pos << endl;
     // -----------------------------------------------------------
 
     JackHistGroup * jackHists = new JackHistGroup();
     for (int time = 0; time < nTimes; time++)
     {
-            for (int j = 0; j < 16*nFiles; j++)
+            for (int j = 0; j < nFiles; j++)
             {
                 jth_C2[time][j][0] = 0;
                 jth_C2[time][j][1] = 0;
@@ -101,7 +126,7 @@ void get_jackknife_means()
                 jth_C3_d[time][j][0] = 0;
                 jth_C3_d[time][j][1] = 0;
 
-                for (int file = 0; file < 16*nFiles; file++)
+                for (int file = 0; file < nFiles; file++)
                 {
                     if (j != file)
                     {
